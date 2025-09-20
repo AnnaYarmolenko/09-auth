@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import css from './NoteForm.module.css';
-import { createNote } from '../../lib/api';
+import { createNote } from '../../lib/api/clientApi';
 import toast from 'react-hot-toast';
 import { NoteTag } from '../../types/note';
 import { useNoteStore } from '../../lib/store/noteStore'; 
@@ -34,8 +34,9 @@ export default function NoteForm() {
 
     if (!draft.title || draft.title.length < 3) newErrors.title = 'Must be more than 3 characters!';
     if (draft.title.length > 50) newErrors.title = 'Must be less than 50 characters!';
-    if (!draft.content || draft.content.length > 500) newErrors.content = 'Must be less than 500 characters!';
     if (!draft.content) newErrors.content = 'This field is required';
+    if (draft.content.length > 500) newErrors.content = 'Must be less than 500 characters!';
+
     if (!draft.tag) newErrors.tag = 'Required';
 
     if (Object.keys(newErrors).length > 0) {

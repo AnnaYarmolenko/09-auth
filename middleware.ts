@@ -3,7 +3,8 @@ import { cookies } from 'next/headers';
 import { parse } from 'cookie';
 import { checkServerSession } from './lib/api/serverApi';
 
-const privateRoutes = ['/profile'];
+const privateRoutes = ['/profile', '/notes', '/notes/filter'];
+const publicRoutes = ['/sign-in', '/sign-up'];
 
 export async function middleware(request: NextRequest) {
   const cookieStore = await cookies();
@@ -13,6 +14,7 @@ export async function middleware(request: NextRequest) {
 	// Шлях, на який користувач намагається перейти
   const { pathname } = request.nextUrl;
   const isPrivateRoute = privateRoutes.some((route) => pathname.startsWith(route));
+  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   if (isPrivateRoute) {
     if (!accessToken) {
@@ -33,7 +35,7 @@ export async function middleware(request: NextRequest) {
             if (parsed.accessToken) cookieStore.set('accessToken', parsed.accessToken, options);
             if (parsed.refreshToken) cookieStore.set('refreshToken', parsed.refreshToken, options);
           }
-
+console.log('Cookies in middleware:', cookieStore.getAll());
           // важливо — передаємо нові cookie далі, щоб оновити їх у браузері
           return NextResponse.next({
             headers: {
@@ -48,10 +50,15 @@ export async function middleware(request: NextRequest) {
     }
   }
   
-  // публічний маршрут або accessToken є — дозволяємо доступ
+  if (isPublicRoute && accessToken) {
+    // Якщо користувач аутентифікований і намагається потрапити на публічний маршрут, редірект на /profile
+    return NextResponse.redirect(new URL('/profile', request.url));
+  }
+
+  // Все інші випадки — дозволяємо доступ
   return NextResponse.next();
 }
 
 export const config = {
-    matcher: ['/profile'],
+    matcher: ['/profile/:path*', '/notes/:path*', '/sign-in', '/sign-up'],
 };

@@ -5,7 +5,7 @@ import css from './SignUpPage.module.css';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { register, RegisterRequest } from '@/lib/api/clientApi';
-import { ApiError } from '@/app/api/api';
+import { AxiosError } from "axios";
 import {useAuthStore} from "@/lib/store/authStore";
 
 
@@ -30,12 +30,13 @@ const SignUp = () => {
       } else {
         setError('Invalid email or password');
       }
-    } catch (error) {
+    } catch (err) {
+      const axiosError = err as AxiosError<{ error?: string }>;
       setError(
-        (error as ApiError).response?.data?.error ??
-          (error as ApiError).message ??
-          'Oops... some error'
-      )
+        axiosError.response?.data?.error ??
+          axiosError.message ??
+          "Oops... some error"
+      );
     }
   };
 
@@ -48,6 +49,7 @@ const SignUp = () => {
           Email
           <input className={css.input} type="email" name="email" required />
         </label>
+    
         <label className={css.formGroup}>
           Password
           <input className={css.input} type="password" name="password" required />

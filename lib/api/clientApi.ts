@@ -1,5 +1,61 @@
 import { nextServer } from './api';
 import { User } from '../../types/user';
+import { type Note } from '../../types/note';
+import { type NoteTag } from '../../types/note';
+
+export interface NoteSearchResponse {
+  page: number;
+  notes: Note[];
+  totalPages: number;
+  tag: NoteTag | null;
+}
+
+export async function fetchNotes(SearchText: string, page: number, tag?: string) {
+
+  const params: Record<string, string | number> = {
+    search: SearchText,
+    page,
+    perPage: 12,
+  };
+
+  if (tag) {
+    params.tag = tag;
+  } 
+
+  const {data} = await nextServer.get<NoteSearchResponse>(
+    '/notes', { params }
+  );
+
+  return data;
+}
+
+export async function fetchNoteById(noteId: Note['id']) {
+  const { data } = await nextServer.get<Note>(
+    `/notes/${noteId}`,
+  );
+
+  return data;
+}
+
+export async function deleteNote(noteId: string) {
+  const {data} = await nextServer.delete<Note>(
+    `/notes/${noteId}`)
+    return data;
+};
+
+interface NewNote {
+  title: string;
+  content: string;
+  tag: NoteTag;
+}
+export async function createNote(newNote: NewNote) {
+  const {data} = await nextServer.post<Note>(
+    '/notes',
+    newNote,
+  );
+
+  return data;
+}
 
 export type RegisterRequest = {
   email: string;
@@ -22,7 +78,8 @@ export const login = async (data: LoginRequest) => {
 };
 
 export const logout = async (): Promise<void> => {
-  await nextServer.post('/auth/logout')
+  const { data } = await nextServer.post('/auth/logout');
+  return data;
 };
 
 type CheckSessionRequest = {
@@ -31,20 +88,20 @@ type CheckSessionRequest = {
 
 export const checkSession = async () => {
   const res = await nextServer.get<CheckSessionRequest>('/auth/session');
-  return res.data.success;
+  return res.data;
 };
 
 export const getMe = async () => {
-  const { data } = await nextServer.get<User>('/auth/users/me');
+  const { data } = await nextServer.get<User>('/users/me');
   return data;
 };
 
 export type UpdateUserRequest = {
-  userName?: string;
-  photoUrl?: string;
+  username?: string;
 };
 
 export const updateMe = async (payload: UpdateUserRequest) => {
-  const res = await nextServer.put<User>('/auth/me', payload);
+  const res = await nextServer.patch<User>('/users/me', payload);
   return res.data;
 };
+

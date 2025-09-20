@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get('refreshToken')?.value;
     const next = request.nextUrl.searchParams.get('next') || '/';
-
     if (refreshToken) {
       const apiRes = await api.get('auth/session', {
         headers: {
