@@ -32,10 +32,12 @@ export async function middleware(request: NextRequest) {
               path: parsed.Path,
               maxAge: Number(parsed['Max-Age']),
             };
-            if (parsed.accessToken) cookieStore.set('accessToken', parsed.accessToken, options);
-            if (parsed.refreshToken) cookieStore.set('refreshToken', parsed.refreshToken, options);
+            if (parsed.accessToken) 
+              cookieStore.set('accessToken', parsed.accessToken, options);
+            if (parsed.refreshToken) 
+              cookieStore.set('refreshToken', parsed.refreshToken, options);
           }
-console.log('Cookies in middleware:', cookieStore.getAll());
+
           // важливо — передаємо нові cookie далі, щоб оновити їх у браузері
           return NextResponse.next({
             headers: {
